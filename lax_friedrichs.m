@@ -5,7 +5,8 @@
 % method.  Stable provided mu=abs(ak/h)<=1 
 % Lax Friedrichs scheme
 % u_new(j) = (u_old(j-1)+u_old(j+1))/2 - (mu/2)*(u_old(j+1)-u_old(j-1))
-
+%
+%
 % parameters:
 %   t0:intitial time
 %   tf:final time
