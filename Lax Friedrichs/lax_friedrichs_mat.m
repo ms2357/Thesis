@@ -20,8 +20,8 @@
 %initialize parameters
 t0 = 0;
 tf = 1;
-L = 4;
-N = 4;
+L = 100;
+N = 100;
 
 %define space mesh
 dx = 1 / L;
@@ -32,34 +32,35 @@ dt = (tf - t0) / N;
 t = t0 : dt : tf;
 
 %wave speed
-a = .8;
+a = .8*eye(N);
+A=eig(a);
 %CFL number
-mu = a * dt / dx;
+mu = A* dt / dx;
 
 %set inital value fucntion  
 f = sin(pi * x);
 %set boundary value function 
-g = sin(-pi * a * t);
+g = sin(-pi * A(1) * t);
 
 %preallocate u, set initial u value to f, boundary value to g
 u = zeros(N+1,L+1);
 uexact = zeros(N+1,L+1);
 u(1,:) = f;
 u(:,1) = g;
-uexact(1,:)=u(1,:)
+uexact(1,:) = u(1,:);
 
 %loop through time
 for n=1:N
     %loop through space
     for j=2:L
         u(n + 1 , j) = (u(n , j - 1) + u(n , j + 1)) / 2 ...
-            - (mu / 2) * (u(n , j + 1) - u(n , j - 1));
+            - (mu(n) / 2) * (u(n , j + 1) - u(n , j - 1));
      end
     
     %ghost cell values, outflow boundary 
     u(n+1 , j + 1) = 2 * u(n , L) - u(n , L - 1);
    
-    X = x - a * t(n + 1);
+    X = x - A(n) * t(n + 1);
     uexact(n + 1 , :) = sin(pi * X);
     %calculate the abs error and infinity norm of the error
     abserr = abs(uexact-u); 

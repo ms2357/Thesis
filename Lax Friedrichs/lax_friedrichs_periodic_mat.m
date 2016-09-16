@@ -17,8 +17,8 @@
 %initialize parameters
 t0=0;
 tf=1;
-L=100;
-N=100;
+L=4;
+N=4;
 
 
 %define space mesh
@@ -27,16 +27,18 @@ x = 0:dx:1;
 x = x';
 
 %set inital funciton  
-f = exp(-(x-.5).^2);
+f = sin(pi * x);
 
 % define time mesh
 dt = (tf-t0)/N;
 t = t0:dt:tf;
 
 %wave speed
-a = .8;
+A=.8*eye(N);
+A=eig(A);
+
 %CFL number
-mu = a*dt/dx;
+mu = A*dt/dx;
 
 %preallocate u, set initial u value to f
 u = zeros(N+1,L+1);
@@ -44,24 +46,22 @@ u(:,1) = f;
 
 
 %loop through time
-for ii=1:N
+for n=1:N
     %loop through space
-    for nn=2:L
-        u(nn,ii+1) = (u(nn+1,ii)+u(nn-1,ii))/2-(mu/2)*(u(nn+1,ii)...
-            -u(nn-1,ii));
+    for j=2:L
+        u(j,n+1) = (u(j+1,n)+u(j-1,n))/2-(mu(n)/2)*(u(j+1,n)-u(j-1,n));
     end
     
     %Set values at boundaries using periodic BC's
-    nn=1;
+    j=1;
     
-    % u(nn-1) = u(0) == u(N)
-    u(nn,ii+1)=(u(nn+1,ii)+u(N,ii))/2-(mu/2)*(u(nn+1,ii)-u(N,ii));
-    nn = N+1;
+    % u(0) == u(N)
+    u(j,n+1)=(u(j+1,n)+u(L,n))/2-(mu(j)/2)*(u(j+1,n)-u(L,n));
+    j = L+1;
     
-    % u(k+1) = u(N+2) == u(2)
-    u(nn,ii+1)=(u(2,ii)+u(nn-1,ii))/2-(mu/2)*(u(2,ii)-u(nn-1,ii));
+    % u(N+2) == u(2)
+    u(j,n+1)=(u(2,n)+u(j-1,n))/2-(mu(2)/2)*(u(2,n)-u(j-1,n));
     
- 
 end
 
 
@@ -71,7 +71,7 @@ clf
 for i=1:L
    
     plot(x,u(:,i))
-	axis([0 1 .7 1])
+	axis([0 1 -.4 1])
     pause(.05)
     drawnow
 end

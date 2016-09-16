@@ -1,8 +1,8 @@
 %initialize parameters
 t0 = 0;
 tf = 1;
-L=10;
-N=10;
+L=4;
+N=4;
 
 %define space mesh
 a=0;
@@ -96,7 +96,7 @@ end
 
 
 %calculate the order ratio for each value of N, except the first
-N=6;
+N=4;
 Ri = zeros(N+1,1);
 Ri(1) = Error(1);
 for k=2:N+1

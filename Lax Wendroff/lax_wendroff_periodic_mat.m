@@ -27,16 +27,17 @@ x = 0:dx:1;
 x = x';
 
 %set inital funciton  
-f = exp(-(x-.5).^2);
+f = sin(pi * x);
 
 % define time mesh
 dt = (tf-t0)/N;
 t = t0:dt:tf;
 
 %wave speed
-a = .8;
+a=.8*eye(N);
+A=eig(a);
 %CFL number
-mu = a*dt/dx;
+mu = A*dt/dx;
 
 %preallocate u, set initial u value to f
 u = zeros(N+1,L+1);
@@ -46,15 +47,15 @@ u(:,1) = f;
 %loop through time
 for j=1:L
     for k=2:N
-        u(k,j+1) = u(k,j) - (mu/2)*(u(k+1,j)-u(k-1,j)) + (mu^2/2)*(u(k+1,j)-2*u(k,j)+u(k-1,j));
+        u(k,j+1) = u(k,j) - (mu(n)/2)*(u(k+1,j)-u(k-1,j)) + (mu(n)^2/2)*(u(k+1,j)-2*u(k,j)+u(k-1,j));
     end
     % I code in the exact values at the endpoints.
     k=1;
     % u(k-1) = u(0) = u(N)
-    u(k,j+1) = u(k,j) - (mu/2)*(u(k+1,j)-u(N,j)) + (mu^2/2)*(u(k+1,j)-2*u(k,j)+u(N,j));
+    u(k,j+1) = u(k,j) - (mu(k)/2)*(u(k+1,j)-u(N,j)) + (mu(k)^2/2)*(u(k+1,j)-2*u(k,j)+u(N,j));
     k=N+1;
     % u(k+1) = u(N+2) = u(2)
-    u(k,j+1) = u(k,j) - (mu/2)*(u(2,j)-u(k-1,j)) + (mu^2/2)*(u(2,j)-2*u(k,j)+u(k-1,j));
+    u(k,j+1) = u(k,j) - (mu(2)/2)*(u(2,j)-u(k-1,j)) + (mu(2)^2/2)*(u(2,j)-2*u(k,j)+u(k-1,j));
     
     
 end
@@ -66,7 +67,7 @@ clf
 for i=1:L
    
     plot(x,u(:,i))
-	axis([0 1 .7 1])
+	axis([0 1 -.4 1])
     pause(.05)
     drawnow
 end
