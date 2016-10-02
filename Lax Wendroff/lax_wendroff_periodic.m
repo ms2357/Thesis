@@ -40,21 +40,24 @@ mu = a*dt/dx;
 
 %preallocate u, set initial u value to f
 u = zeros(N+1,L+1);
-u(:,1) = f;
+u(1,:) = f;
 
 
 %loop through time
-for j=1:L
-    for k=2:N
-        u(k,j+1) = u(k,j) - (mu/2)*(u(k+1,j)-u(k-1,j)) + (mu^2/2)*(u(k+1,j)-2*u(k,j)+u(k-1,j));
+for n=1:N
+    for j=2:L
+        u(n+1,j) = u(n,j) - (mu/2)*(u(n,j+1)-u(n,j-1)) +...
+            (mu^2/2)*(u(n,j-1)-2*u(n,j)+u(n,j+1));
     end
     % I code in the exact values at the endpoints.
-    k=1;
+    j=1;
     % u(k-1) = u(0) = u(N)
-    u(k,j+1) = u(k,j) - (mu/2)*(u(k+1,j)-u(N,j)) + (mu^2/2)*(u(k+1,j)-2*u(k,j)+u(N,j));
-    k=N+1;
+    u(n+1,j) = u(j,n) - (mu/2)*(u(n,j+1)-u(n,L)) +...
+        (mu^2/2)*(u(n,L)-2*u(j,n)+u(n,j+1));
+    j=L+1;
     % u(k+1) = u(N+2) = u(2)
-    u(k,j+1) = u(k,j) - (mu/2)*(u(2,j)-u(k-1,j)) + (mu^2/2)*(u(2,j)-2*u(k,j)+u(k-1,j));
+    u(n+1,j) = u(n,j) - (mu/2)*(u(n,2)-u(n,j-1)) +...
+        (mu^2/2)*(u(n,2)-2*u(n,1)+u(n,j-1));
     
     
 end
@@ -66,7 +69,7 @@ clf
 for i=1:L
    
     plot(x,u(:,i))
-	axis([0 1 .7 1])
+	axis([0 1 -.2 1])
     pause(.05)
     drawnow
 end

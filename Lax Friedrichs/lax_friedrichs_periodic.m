@@ -1,3 +1,4 @@
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Description: This script implements the Lax Friedrich method to 
 % numerically solve the scalar advection equation u_t + au_x = 0. 
@@ -34,35 +35,39 @@ dt = (tf-t0)/N;
 t = t0:dt:tf;
 
 %wave speed
-a = .8;
+a = 1;
 
 %CFL number
 mu = a*dt/dx;
 
 %preallocate u, set initial u value to f
 u = zeros(N+1,L+1);
-u(:,1) = f;
+u(1,:) = f;
 
 
 %loop through time
 for n=1:N
     %loop through space
     for j=2:L
-        u(j,n+1) = (u(j+1,n)+u(j-1,n))/2-(mu/2)*(u(j+1,n)...
-            -u(j-1,n));
-    end
+        
+        u(n + 1 , j) = (u(n , j - 1) + u(n , j + 1)) / 2 ...
+            - (mu / 2) * (u(n , j + 1) - u(n , j - 1));
+        
+     end
+    
     
     %Set values at boundaries using periodic BC's
-    j=1;
+    j=1; 
     
     % u(0) == u(N)
-    u(j,n+1)=(u(j+1,n)+u(L,n))/2-(mu/2)*(u(j+1,n)-u(L,n));
+    u(n+1,j)=(u(n,j+1)+u(n,L))/2-(mu/2)*(u(n,j+1)-u(n,L));
+
+    
     j = L+1;
     
     % u(N+2) == u(2)
-    u(j,n+1)=(u(2,n)+u(j-1,n))/2-(mu/2)*(u(2,n)-u(j-1,n));
-    
- 
+    u(n+1,j)=(u(n,2)+u(n,j-1))/2-(mu/2)*(u(n,2)-u(n,j-1));
+  
 end
 
 
