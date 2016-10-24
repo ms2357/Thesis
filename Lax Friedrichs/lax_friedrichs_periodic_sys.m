@@ -35,7 +35,7 @@ dt = (tf-t0)/N;
 t = t0:dt:tf;
 
 %wave speed
-A=[0 1; 1 0];
+A=[0 1; .5 0];
 
 %CFL number
 mu = A*dt/dx;
@@ -63,26 +63,33 @@ for n=1:N
       U.pressure(n + 1 , j)=new(1);
       U.velocity(n+1,j)=new(2);
     end
+
     
     %Set values at boundaries using periodic BC's
     j=1; 
     
     % u(0) == u(N)
-    prev=cell2mat({U.pressure(n,j+1),U.velocity(n,j+1)})';
-    next=cell2mat({U.pressure(n,L),U.velocity(n,L)})';
-    new= (prev + next)/ 2 - (mu/ 2) * (next - prev);
+    prev=cell2mat({U.pressure(n , L ),U.velocity(n , L )})';
+    next=cell2mat({U.pressure(n , j+1),U.velocity(n , j+1)})';
+    new= (prev + next)/ 2 - (mu / 2) * (next - prev);
     U.pressure(n + 1 , j)=new(1);
-    U.velocity(n+1,j) = new(2); 
-       
-    j = L+1;
+    U.velocity(n + 1,j) = new(2); 
+    %U.pressure(n + 1 , j)=U.pressure(n,L+1);
+    %U.velocity(n + 1,j) = U.velocity(n,L+1);
     
-    % u(N+2) == u(2)
-    prev=cell2mat({U.pressure(n,2),U.velocity(n,2)})';
-    next=cell2mat({U.pressure(n,j-1),U.velocity(n,j-1)})';
+        
+      
+    j = L;
+    
+    % u(N+1) == u(2)
+    prev=cell2mat({U.pressure(n,j),U.velocity(n,j)})';
+    next=cell2mat({U.pressure(n,2),U.velocity(n,2)})';
     new= (prev + next)./ 2 - (mu/ 2) * (next - prev);
-    U.pressure(n + 1 , j)=new(1);
-    U.velocity(n+1,j) = new(2); 
- 
+    U.pressure(n + 1 , j + 1)=new(1);
+    U.velocity(n + 1 , j + 1) = new(2); 
+    %U.pressure(n + 1 , j+1)=U.pressure(n,1);
+    %U.velocity(n + 1,j+1) = U.velocity(n,1);
+    
     
 end
 
@@ -91,10 +98,9 @@ clf
 % hold on
 for i=1:L
    
-    plot(x,U.pressure(:,i),x,U.velocity(:,i))
+    plot(x,U.pressure(i,:),x,U.velocity(i,:))
 	axis([0 1 -1 2])
     pause(.05)
     drawnow
 end
 hold off
-

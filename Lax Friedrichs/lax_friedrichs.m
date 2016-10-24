@@ -20,8 +20,8 @@
 %initialize parameters
 t0 = 0;
 tf = 1;
-L = 4;
-N = 4;
+L = 100;
+N = 100;
 
 %define space mesh
 dx = 1 / L;

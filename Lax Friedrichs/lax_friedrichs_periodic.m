@@ -18,8 +18,8 @@
 %initialize parameters
 t0=0;
 tf=1;
-L=4;
-N=4;
+L=100;
+N=100;
 
 
 %define space mesh
@@ -35,7 +35,7 @@ dt = (tf-t0)/N;
 t = t0:dt:tf;
 
 %wave speed
-a = 1;
+a = .8;
 
 %CFL number
 mu = a*dt/dx;
@@ -60,8 +60,8 @@ for n=1:N
     j=1; 
     
     % u(0) == u(N)
-    u(n+1,j)=(u(n,j+1)+u(n,L))/2-(mu/2)*(u(n,j+1)-u(n,L));
-
+    %u(n+1,j)=(u(n,j+1)+u(n,L))/2-(mu/2)*(u(n,j+1)-u(n,L));
+    u(n+1,j)=(u(n,j+1)+u(n,L-1))/2-(mu/2)*(u(n,j+1)-u(n,L-1));
     
     j = L+1;
     
@@ -76,8 +76,8 @@ clf
 % hold on
 for i=1:L
    
-    plot(x,u(:,i))
-	axis([0 1 -.4 1])
+    plot(x,u(i,:))
+	axis([0 1 0 1])
     pause(.05)
     drawnow
 end
