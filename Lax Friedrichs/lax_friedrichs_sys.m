@@ -32,7 +32,7 @@ InitialVelocity = cos(pi * x)';
 
 
 % define time mesh
-dt = (tf-t0)/N;
+dt = dx;
 t = t0:dt:tf;
 
 %wave speed details
@@ -42,13 +42,12 @@ Z0 = rho0 * K0;             %impedence
 A = [0 K0; 1 / rho0 0];       %wave speed
 R = [-Z0 Z0 ; 1 1];         
 
-%impose boundary functions w(0,t)= first value of R*u(0,t)=f(t) 
-% and z(1,t)= second value of R*p(1,t)=g(t)
-%essentially p+u=f(t)@0 p+u=g(t) @1
-bdd=R*[sin(pi*t);cos(pi+pi*t)];
-f=bdd(1,:)';
-g=bdd(2,:)';
-
+%impose boundary functions 
+bd0=R*[sin(pi*t);cos(pi*t)];
+bdL=R*[-sin(pi*(L-t));-cos(pi*(L-t))];
+f=bd0(1,:)';
+g=bdL(2,:)';
+ 
 %CFL number
 mu = A*dt/dx;
 
@@ -62,7 +61,6 @@ U(:).velocity(1,:) = InitialVelocity;
 C=struct('w', zeros(N+1,2), 'z',zeros(N+1,2));
 C.w(:,1)=f;
 C.z(:,2)=g;
-
 
 
 %loop through time
@@ -82,8 +80,6 @@ for n=1:N
     %Set values at boundaries using periodic BC's
     j=1;
     
-    %need to do linear interp for z and then back solve for w then get u
-    %and p from those here and on other boundary
     prev=R*(cell2mat({U.pressure(n,j),U.velocity(n,j)}))';
     next=R*(cell2mat({U.pressure(n,j+1),U.velocity(n,j+1)}))';
     curr = 2 * prev - next;
@@ -94,7 +90,7 @@ for n=1:N
     U.velocity(n+1,j)=newU(2);
     
        
-    j = L;
+    j = L+1;
     % u(L+1) == u(2)
     prev=R*(cell2mat({U.pressure(n,j),U.velocity(n,j)}))';
     next=R*(cell2mat({U.pressure(n,j-1),U.velocity(n,j-1)}))';
@@ -113,7 +109,7 @@ clf
 for i=1:L
    
     plot(x,U.pressure(i,:),x,U.velocity(i,:))
-	axis([0 1 -1 1])
+	axis([0 1 -1.5 1.5])
     pause(.05)
     drawnow
 end
