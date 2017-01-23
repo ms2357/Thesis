@@ -42,7 +42,7 @@ Z0 = rho0 * K0;             %impedence
 A = [0 K0; 1 / rho0 0];       %wave speed
 R = [-Z0 Z0 ; 1 1];         
 
-%impose boundary functions 
+%impose boundary functions for chars
 bd0=R*[sin(pi*t);cos(pi*t)];
 bdL=R*[-sin(pi*(L-t));-cos(pi*(L-t))];
 f=bd0(1,:)';
@@ -57,33 +57,45 @@ U(:).pressure(1,:) = InitialPressure;
 U(:).velocity(1,:) = InitialVelocity;
 
 
-
+%struct to store imposed and interpolated values at boundaries
+%col 1 stores values at left bdd col 2 stores values at right bdd
+%w left moving 
+%z right moving
 C=struct('w', zeros(N+1,2), 'z',zeros(N+1,2));
-C.w(:,1)=f;
-C.z(:,2)=g;
+
+%set col 2 of z char to imposed bdd function values 
+C.w(:,2)=g;
+%set col 1 of z char to imposed bdd function values 
+C.z(:,1)=f;
+
 
 
 %loop through time
 for n=1:N
     %loop through space
     for j=2:L
-%u(n + 1,j)= (u(n,j - 1) + u(n,j + 1))/2 -(mu/2)*(u(n,j + 1) - u(n,j - 1))
+    %u(n + 1,j)=(u(n,j - 1) + u(n,j + 1))/2
+    %           -(mu/2)*(u(n,j + 1) - u(n,j - 1))
       
-      prev=(cell2mat({U.pressure(n,j-1),U.velocity(n,j-1)}))';
-      next=(cell2mat({U.pressure(n,j+1),U.velocity(n,j+1)}))';
+      prev=(cell2mat({U.pressure(n,j - 1),U.velocity(n,j - 1)}))';
+      next=(cell2mat({U.pressure(n,j + 1),U.velocity(n,j + 1)}))';
       newU= (prev + next)/ 2 - (mu/ 2) * (next - prev);
 
       U.pressure(n + 1 , j)=newU(1);
-      U.velocity(n+1,j)=newU(2);
+      U.velocity(n + 1 , j)=newU(2);
     end
     
-    %Set values at boundaries using periodic BC's
+    %Boundary conditions
     j=1;
     
     prev=R*(cell2mat({U.pressure(n,j),U.velocity(n,j)}))';
     next=R*(cell2mat({U.pressure(n,j+1),U.velocity(n,j+1)}))';
-    curr = 2 * prev - next;
-    C.z(n,j)=curr(2);
+    
+    %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for unk char
+    curr = mu*(prev-next) + prev ;
+    C.w(n,j)=curr(1);
+    
+    %calc press/vel using chars
     newC=(cell2mat({C.w(n,j),C.z(n,j)}))';
     newU=R\newC;
     U.pressure(n+1,j)=newU(1);
@@ -91,11 +103,14 @@ for n=1:N
     
        
     j = L+1;
-    % u(L+1) == u(2)
-    prev=R*(cell2mat({U.pressure(n,j),U.velocity(n,j)}))';
-    next=R*(cell2mat({U.pressure(n,j-1),U.velocity(n,j-1)}))';
-    curr = 2 * prev - next;
-    C.w(n,2)=curr(1);
+    prev=R*(cell2mat({U.pressure(n,j-1),U.velocity(n,j-1)}))';
+    next=R*(cell2mat({U.pressure(n,j),U.velocity(n,j)}))';
+    
+    %w(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for unk char
+    curr = mu*(prev-next) +prev ;
+    C.z(n,2)=curr(2);
+    
+    %calc press/vel using chars
     newC=(cell2mat({C.w(n,2),C.z(n,2)}))';
     newU=R\newC;
     U.pressure(n+1,j)=newU(1);
@@ -104,8 +119,6 @@ for n=1:N
 end
 
 clf
-%figure(glf)
-% hold on
 for i=1:L
    
     plot(x,U.pressure(i,:),x,U.velocity(i,:))
