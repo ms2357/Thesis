@@ -17,8 +17,8 @@
 %initialize parameters
 t0=0;
 tf=1;
-L=100;
-N=100;
+L=2;
+N=2;
 
 
 %define space mesh
@@ -29,7 +29,8 @@ x = x';
 %set inital funcitons  
 InitialPressure = sin(pi * x)';
 InitialVelocity = cos(pi * x)';
-
+%InitialPressure = x;
+%IntitialVelocity = ones(1, length(x));
 
 % define time mesh
 dt = dx;
