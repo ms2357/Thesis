@@ -8,8 +8,8 @@ L=100;
 N=100;
 
 %define space mesh
-dx = 1/L;
-x = 0:dx/2:1;
+h = 1/L;
+x = 0:h/2:1;
 x = x';
 
 %set inital funcitons  
@@ -20,24 +20,27 @@ InitialVelocity = cos(pi*x)';
 
 
 % define time mesh
-dt = dx;
-t = t0:dt:tf;
+k = h/2;
+t = t0:k:tf;
 
 %wave speed details
-rho1 = 2;                 %density
-K1 = .25;                   %bulk modulus
-rho2=2;
-K2=.25;
+rho1 = 1;                 %density
+K1 = 1;                   %bulk modulus
+rho2=1;
+K2=1;
 %impedence
 Z1 = rho1 * K1;             
 Z2=rho2*K2;
 %Zmatrix=[Z1 Z0;1 1];
 
 A = [0 K1; 1 / rho1 0];       %wave speed
-R = [-Z1 Z1 ; 1 1];         
+R = [-Z1 Z1 ; 1 1];
+evaluesA=eig(A);
+c0w=evaluesA(1);
+c0z=evaluesA(2);
 
 %CFL number
-mu = A*dt/dx;
+mu = A*k/h;
 
 %preallocate u, set initial value using intital condition
 U =struct('PressureEdge1', zeros(N+1,L+1), 'VelocityEdge1',zeros(N+1,L+1),...
@@ -86,8 +89,9 @@ for n=1:N
     prev= R*prev;
     next=(cell2mat({U.PressureEdge1(n,j+1),U.VelocityEdge1(n,j+1)}))';
     next= R*next;
-    %w(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
-    curr = prev - mu*(prev - next);
+    %w(x^n)=c0(dt/dx)*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
+    %where c0=-1, an eigen value of A and the slope of the characteristic
+    curr = prev +c0w*(k/h)*(prev - next);
     %set w char value at junction 
     C.w1(n+1,a)=curr(1);
     
@@ -96,8 +100,9 @@ for n=1:N
     prev= R*prev;
     next=(cell2mat({U.PressureEdge2(n,j+1),U.VelocityEdge2(n,j+1)}))';
     next= R*next;
-    %w(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
-    curr = prev - mu*(prev - next);
+    %w(x^n)=c0(dt/dx)*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
+    %where c0=-1, an eigen value of A and the slope of the characteristic
+    curr = prev +c0w*(k/h)*(prev - next);
     %set w char value at junction 
     C.w2(n+1,b)=curr(1);
     
@@ -114,7 +119,7 @@ for n=1:N
     next=(cell2mat({U.PressureEdge1(n,j),U.VelocityEdge1(n,j)}))';
     next=R*next;
     %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
-    curr = mu*(prev - next) + prev;
+    curr = c0z*(k/h)*(prev - next) + prev;
     %set w char value at junction 
     C.z1(n+1,b)=curr(2);
     
@@ -124,7 +129,7 @@ for n=1:N
     next=(cell2mat({U.PressureEdge2(n,j),U.VelocityEdge2(n,j)}))';
     next=R*next;
     %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
-    curr = mu*(prev - next) + prev;
+    curr = c0z*(k/h)*(prev - next) + prev;
     %set w char value at junction 
     C.z2(n+1,a)=curr(2);
     
@@ -134,7 +139,8 @@ for n=1:N
     %calc unk chars at juction using known chars.  Solve system Ax=b using
     %interpolated chars 
     knownchars = (cell2mat({C.w1(n+1,a),C.z2(n+1,a)}))';
-    knownchars = [Z1 Z2;-1 1]*knownchars;
+    knownchars;
+    knownchars = [Z1  Z2; -1 1]*knownchars;
     unkchars = [Z2 Z1; -1 1] \ knownchars ;
     C.w2(n+1,a) = unkchars(1);
     C.z1(n+1,a) = unkchars(2);
@@ -166,13 +172,13 @@ for n=1:N
     
     
     %set chars on edge 2 at L+1 to calc'd press/vel  
-    newC = (cell2mat({C.w1(n+1,2),C.z1(n+1,2)}))';
+    newC = (cell2mat({C.w1(n+1,b),C.z1(n+1,b)}))';
     newU = R \ newC;
     U.PressureEdge1(n+1,j) = newU(1);
     U.VelocityEdge1(n+1,j) = newU(2);
     %U.PressureEdge2(n+1,1) = newU(1);
     
-    newC = (cell2mat({C.w2(n+1,2),C.z2(n+1,2)}))';
+    newC = (cell2mat({C.w2(n+1,b),C.z2(n+1,b)}))';
     newU = R \ newC;
     U.PressureEdge2(n+1,1) = newU(1);
     U.VelocityEdge2(n+1,1) = newU(2);
@@ -182,9 +188,9 @@ end
 clf
 %figure(glf)
 % hold on
-for i=1:L
+for i=1:N+1
    
-    plot(x(1:N+1),U.PressureEdge1(i,:),x(1:N+1),U.VelocityEdge1(i,:))
+    plot(x(1:L+1),U.PressureEdge1(i,:),x(1:L+1),U.VelocityEdge1(i,:))
 	axis([0 1 -1.5 1.5])
     pause(.05)
     drawnow
