@@ -191,7 +191,7 @@ clf
 % hold on
 for i=1:N+1
     
-    plot(x(1:L+1),U.PressureEdge1(i,:),x(L+1:end),U.PressureEdge2(i,:),x(1:L+1),U.VelocityEdge1(i,:),x(L+1:end),U.VelocityEdge2(i,:))
+    plot(x(1:L+1),U.PressureEdge1(i,:),x(L+1:end),U.PressureEdge2(i,:),x(1:L+1),U.VelocityEdge1(i,:)),x,U.VelocityEdge2(i.:))
 	axis([0 1 -1.5 1.5])
     pause(.05)
     drawnow
