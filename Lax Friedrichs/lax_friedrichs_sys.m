@@ -17,8 +17,8 @@
 %initialize parameters
 t0=0;
 tf=1;
-L=2;
-N=2;
+L=100;
+N=100;
 
 
 %define space mesh

@@ -5,7 +5,7 @@ b=2;
 t0=0;
 tf=1;
 L=100;
-N=100;
+%N=100;
 
 %define space mesh
 h = 1/L;
@@ -13,15 +13,16 @@ x = 0:h/2:1;
 x = x';
 
 %set inital funcitons  
-InitialPressure = sin(pi * x)';
+InitialPressure = sin(pi * x);
 %InitialPressure = x;
-%InitialVelocity = ones(1,length(x));
-InitialVelocity = cos(pi*x)';
+InitialVelocity = ones(1,length(x));
+%InitialVelocity = cos(pi*x)';
 
 
 % define time mesh
 k = h/2;
 t = t0:k:tf;
+N=length(t)-1;
 
 %wave speed details
 rho1 = 1;                 %density
@@ -45,10 +46,10 @@ mu = A*k/h;
 %preallocate u, set initial value using intital condition
 U =struct('PressureEdge1', zeros(N+1,L+1), 'VelocityEdge1',zeros(N+1,L+1),...
     'PressureEdge2', zeros(N+1,L+1), 'VelocityEdge2',zeros(N+1,L+1));
-U(:).PressureEdge1(1,:) = InitialPressure(1:N+1);
-U(:).VelocityEdge1(1,:) = InitialVelocity(1:N+1);
-U(:).PressureEdge2(1,:) = InitialPressure(N+1:end);
-U(:).VelocityEdge2(1,:) = InitialVelocity(N+1:end);
+U(:).PressureEdge1(1,:) = InitialPressure(1:L+1);
+U(:).VelocityEdge1(1,:) = InitialVelocity(1:L+1);
+U(:).PressureEdge2(1,:) = InitialPressure(L+1:end);
+U(:).VelocityEdge2(1,:) = InitialVelocity(L+1:end);
 
 
 
@@ -79,6 +80,8 @@ for n=1:N
 
       U.PressureEdge2(n + 1 , j)=newU(1);
       U.VelocityEdge2(n + 1 , j)=newU(2);
+      
+
     end
 
     %Jucntions
@@ -91,7 +94,7 @@ for n=1:N
     next= R*next;
     %w(x^n)=c0(dt/dx)*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
     %where c0=-1, an eigen value of A and the slope of the characteristic
-    curr = prev +c0w*(k/h)*(prev - next);
+    curr = c0w*(k/h)*(prev - next) + prev;
     %set w char value at junction 
     C.w1(n+1,a)=curr(1);
     
@@ -102,7 +105,7 @@ for n=1:N
     next= R*next;
     %w(x^n)=c0(dt/dx)*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
     %where c0=-1, an eigen value of A and the slope of the characteristic
-    curr = prev +c0w*(k/h)*(prev - next);
+    curr = c0w*(k/h)*(prev - next) + prev;
     %set w char value at junction 
     C.w2(n+1,b)=curr(1);
     
@@ -139,34 +142,31 @@ for n=1:N
     %calc unk chars at juction using known chars.  Solve system Ax=b using
     %interpolated chars 
     knownchars = (cell2mat({C.w1(n+1,a),C.z2(n+1,a)}))';
-    knownchars;
     knownchars = [Z1  Z2; -1 1]*knownchars;
     unkchars = [Z2 Z1; -1 1] \ knownchars ;
     C.w2(n+1,a) = unkchars(1);
     C.z1(n+1,a) = unkchars(2);
   
-    %calc press/vel using chars
-    j=1;
+    %calc press/vel using chars at j=1
     newC = (cell2mat({C.w1(n+1,a),C.z1(n+1,a)}))';
     newU = R \ newC;
-    U.PressureEdge1(n+1,j) = newU(1);
-    U.VelocityEdge1(n+1,j) = newU(2);
-    %U.PressureEdge2(n+1,L+1)=U.PressureEdge1(n+1,j);
+    U.PressureEdge1(n+1,1) = newU(1);
+    U.VelocityEdge1(n+1,1) = newU(2);
     
     newC = (cell2mat({C.w2(n+1,a),C.z2(n+1,a)}))';
     newU = R \ newC;
     U.PressureEdge2(n+1,L+1) = newU(1);
     U.VelocityEdge2(n+1,L+1) = newU(2);
-    %U.PressureEdge1(n+1,L+1)=U.PressureEdge2(n+1,j);
     
-    %calc press/vel using chars
-    j=L+1;
+    
+    %calc press/vel using chars at j=L+1
+
     
     %calc unk chars at juction using known chars.  Solve system Ax=b using
     %interpolated chars 
     knownchars = (cell2mat({C.w2(n+1,b),C.z1(n+1,b)}))';
-    knownchars = [-Z2 -Z1;1 -1]*knownchars;
-    unkchars = [-Z1 -Z2; 1 -1] \ knownchars ;
+    knownchars = [Z2 Z1;1 -1]*knownchars;
+    unkchars = [Z1 Z2; 1 -1] \ knownchars ;
     C.w1(n+1,b) = unkchars(1);
     C.z2(n+1,b) = unkchars(2);
     
@@ -174,9 +174,9 @@ for n=1:N
     %set chars on edge 2 at L+1 to calc'd press/vel  
     newC = (cell2mat({C.w1(n+1,b),C.z1(n+1,b)}))';
     newU = R \ newC;
-    U.PressureEdge1(n+1,j) = newU(1);
-    U.VelocityEdge1(n+1,j) = newU(2);
-    %U.PressureEdge2(n+1,1) = newU(1);
+    U.PressureEdge1(n+1,L+1) = newU(1);
+    U.VelocityEdge1(n+1,L+1) = newU(2);
+   
     
     newC = (cell2mat({C.w2(n+1,b),C.z2(n+1,b)}))';
     newU = R \ newC;
@@ -184,17 +184,17 @@ for n=1:N
     U.VelocityEdge2(n+1,1) = newU(2);
 
 end
-K=[U.PressureEdge1;U.PressureEdge2];
-M=[U.VelocityEdge1;U.VelocityEdge2];
+
 clf
 %figure(glf)
 % hold on
 for i=1:N+1
     
-    plot(x(1:L+1),U.PressureEdge1(i,:),x(L+1:end),U.PressureEdge2(i,:),x(1:L+1),U.VelocityEdge1(i,:),x(L+1:end),U.VelocityEdge2(i,:))
-	axis([0 1 -1.5 1.5])
+    plot(x(1:L+1),U.PressureEdge1(i,:),'b',x(L+1:end),U.PressureEdge2(i,:),'g'...
+        ,x(1:L+1),U.VelocityEdge1(i,:),'r',x(L+1:end),U.VelocityEdge2(i,:),'m')
+	axis([0 1 0 1.5])
     pause(.05)
     drawnow
-    
+
 end
 hold off
