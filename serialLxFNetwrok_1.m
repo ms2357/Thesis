@@ -5,7 +5,7 @@ b=2;
 t0=0;
 tf=1;
 L=4;
- 
+%N=100;
 
 %define space mesh
 h = 1/L;
@@ -14,7 +14,10 @@ x = x';
 
 %set inital funcitons  
 InitialPressure = sin(pi * x);
+%InitialPressure = x;
 InitialVelocity = ones(1,length(x));
+%InitialVelocity = cos(pi*x)';
+
 
 % define time mesh
 k = h;
@@ -89,7 +92,7 @@ for n=1:N
     prev= R*prev;
     next=(cell2mat({U.PressureEdge1(n,j+1),U.VelocityEdge1(n,j+1)}))';
     next= R*next;
-    %w(x^n)=c0(dt/dx)*(w_(L)-w_(L-1))+w_L...linear interpolation for known char
+    %w(x^n)=c0(dt/dx)*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
     %where c0=-1, an eigen value of A and the slope of the characteristic
     curr = c0w*(k/h)*(prev - next) + prev;
     %set w char value at junction 
