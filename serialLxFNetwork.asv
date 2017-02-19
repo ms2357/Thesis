@@ -4,7 +4,7 @@ b = 2;
 %initialize parameters
 t0 = 0;
 tf = 1;
-L = 100;
+L = 4;
  
 
 %define space mesh
@@ -17,7 +17,7 @@ InitialPressure = sin( pi * x );
 InitialVelocity = ones( 1 , length( x ) );
 
 % define time mesh
-k = h / 2;
+k = h  ;
 t = t0 : k : tf;
 N = length( t ) - 1;
 
@@ -117,10 +117,10 @@ for n=1:N
     C.w1( n + 1 , a ) = curr( 1 );
         
     %calc w char using pres/vel for edge 2 at vertex b
-    prev = R * ( cell2mat( { U.PressureEdge2( n , j ),...
+    prev = ( cell2mat( { U.PressureEdge2( n , j ),...
                              U.VelocityEdge2( n , j ) } ) )';
       
-    next = R * ( cell2mat( { U.PressureEdge2( n , j + 1 ),...
+    next =  ( cell2mat( { U.PressureEdge2( n , j + 1 ),...
                              U.VelocityEdge2( n , j + 1 ) } ) )';
       
     %w(x^n)=c0(dt/dx)*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
