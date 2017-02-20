@@ -3,13 +3,13 @@ b = 2;
 
 %initialize parameters
 t0 = 0;
-tf = 1;
-L = 4;
+tf = 2;
+L = 100;
  
 
 %define space mesh
 h = 1 / L;
-x = 0 : h  : 1;
+x = 0 : h / 2 : 1;
 x = x';
 
 %set inital funcitons  
@@ -17,7 +17,7 @@ InitialPressure = sin( pi * x );
 InitialVelocity = ones( 1 , length( x ) );
 
 % define time mesh
-k = h  ;
+k = h / 3 ;
 t = t0 : k : tf;
 N = length( t ) - 1;
 
@@ -99,17 +99,16 @@ for n=1:N
     j = 1;
 
     %calc  w char using pres/vel for egde 1 at vertex a
-    prev =  ( cell2mat( { U.PressureEdge1( n , j ),...
+    prev = R * ( cell2mat( { U.PressureEdge1( n , j ),...
                              U.VelocityEdge1( n , j ) } ) )';
-    prev = R * prev;
     
     %check to ensure press/vel for w/z satisfy IC
     C.w1( 1 , a ) = prev( 1 );
     C.z1( 1 , a ) = prev( 2 );
     
-    next = ( cell2mat( { U.PressureEdge1( n , j + 1 ),...
+    next = R *( cell2mat( { U.PressureEdge1( n , j + 1 ),...
                              U.VelocityEdge1( n , j + 1 ) } ) )';
-    next =  R * next;   
+   
     %w(x^n)=c0(dt/dx)*(w_(L)-w_(L-1))+w_L...linear interpolation for known char
     %where c0=-1, an eigen value of A and the slope of the characteristic
     curr = c0w * ( k / h ) * ( prev - next ) + prev;
@@ -118,11 +117,15 @@ for n=1:N
     C.w1( n + 1 , a ) = curr( 1 );
         
     %calc w char using pres/vel for edge 2 at vertex b
-    prev = ( cell2mat( { U.PressureEdge2( n , j ),...
+    prev = R * ( cell2mat( { U.PressureEdge2( n , j ),...
                              U.VelocityEdge2( n , j ) } ) )';
       
-    next =  ( cell2mat( { U.PressureEdge2( n , j + 1 ),...
+    next = R * ( cell2mat( { U.PressureEdge2( n , j + 1 ),...
                              U.VelocityEdge2( n , j + 1 ) } ) )';
+   
+    %check to ensure press/vel for w/z satisfy IC
+    C.w2( 1 , b ) = prev( 1 );
+    C.z2( 1 , b ) = prev( 2 );
       
     %w(x^n)=c0(dt/dx)*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
     %where c0=-1, an eigen value of A and the slope of the characteristic
@@ -148,20 +151,24 @@ for n=1:N
     C.z1( 1 , b ) = next( 2 );
     
     %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
-    curr = c0z * ( k / h ) * ( prev - next ) + next;
+    curr = c0z * ( k / h ) * ( prev - next ) + prev;
     
     %set w char value at vertex 
     C.z1( n + 1 , b ) = curr( 2 );
     
-    %calc chars using pres/vel for edge 2 at vertex b
+    %calc chars using pres/vel for edge 2 at vertex a
     prev = R * ( cell2mat( { U.PressureEdge2( n , j - 1 ),...
                              U.VelocityEdge2( n , j - 1 ) } ) )';
                          
     next = R * ( cell2mat( { U.PressureEdge2( n , j ),...
                              U.VelocityEdge2( n , j ) } ) )';
+                         
+    %check to ensure press/vel for w/z satisfy IC
+    C.w2( 1 , a ) = next( 1 );
+    C.z2( 1 , a ) = next( 2 );
    
     %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
-    curr = c0z * ( k / h ) * ( prev - next ) + next;
+    curr = c0z * ( k / h ) * ( next - prev ) + prev;
     
     %set w char value at vertex 
     C.z2( n + 1 , a ) = curr( 2 );
@@ -240,7 +247,7 @@ for i=1:N+1
           x ( 1 : L + 1 ),U.VelocityEdge1( i , : ),'r',...
           x ( L + 1 : end ),U.VelocityEdge2( i , : ),'m')
       
-	axis( [ 0  1  0  1.5 ])
+	axis( [ 0  1  0 1.5 ])
     pause( .05 )
     drawnow
 
