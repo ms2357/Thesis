@@ -4,12 +4,12 @@ b = 2;
 %initialize parameters
 t0 = 0;
 tf = 1;
-L = 8;
+L = 100;
  
 
 %define space mesh
 h = 1 / L;
-x = 0 : h  : 1;
+x = 0 : h / 2 : 1;
 x = x';
 
 %set inital funcitons  
@@ -17,7 +17,7 @@ InitialPressure = sin( pi * x );
 InitialVelocity = ones( 1 , length( x ) );
 
 % define time mesh
-k = h  ;
+k = h / 3 ;
 t = t0 : k : tf;
 N = length( t ) - 1;
 
@@ -151,7 +151,7 @@ for n=1:N
     C.z1( 1 , b ) = next( 2 );
     
     %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
-    curr = c0z * ( k / h ) * ( prev - next ) + next;
+    curr = c0z * ( k / h ) * ( prev - next ) + prev;
     
     %set w char value at vertex 
     C.z1( n + 1 , b ) = curr( 2 );
@@ -168,7 +168,7 @@ for n=1:N
     C.z2( 1 , a ) = next( 2 );
    
     %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
-    curr = c0z * ( k / h ) * ( next - prev ) + next;
+    curr = c0z * ( k / h ) * ( next - prev ) + prev;
     
     %set w char value at vertex 
     C.z2( n + 1 , a ) = curr( 2 );

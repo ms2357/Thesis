@@ -57,7 +57,7 @@ for mm=1:N+1
     end
     
     %calculate the abs error and infinity norm of the error
-    abserr = abs(uexact-u); 
+    abserr = abs(uexact-u);
     %calculate L1 error norm in space
     row_err=dx*trapz(abserr,2);
     %calculate L1 error norm in time 
