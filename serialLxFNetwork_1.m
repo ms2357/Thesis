@@ -4,7 +4,7 @@ b = 2;
 %initialize parameters
 t0 = 0;
 tf = 1;
-L = 100;
+L = 4;
  
 
 %define space mesh
@@ -17,7 +17,7 @@ InitialPressure = sin( pi * x );
 InitialVelocity = ones( 1 , length( x ) );
 
 % define time mesh
-k = h / 3 ;
+k = h / 4 ;
 t = t0 : k : tf;
 N = length( t ) - 1;
 
@@ -103,8 +103,8 @@ for n=1:N
                              U.VelocityEdge1( n , j ) } ) )';
     
     %check to ensure press/vel for w/z satisfy IC
-    C.w1( 1 , a ) = prev( 1 );
-    C.z1( 1 , a ) = prev( 2 );
+    %C.w1( 1 , a ) = prev( 1 );
+    %C.z1( 1 , a ) = prev( 2 );
     
     next = R *( cell2mat( { U.PressureEdge1( n , j + 1 ),...
                              U.VelocityEdge1( n , j + 1 ) } ) )';
@@ -124,8 +124,8 @@ for n=1:N
                              U.VelocityEdge2( n , j + 1 ) } ) )';
    
     %check to ensure press/vel for w/z satisfy IC
-    C.w2( 1 , b ) = prev( 1 );
-    C.z2( 1 , b ) = prev( 2 );
+    %C.w2( 1 , b ) = prev( 1 );
+    %C.z2( 1 , b ) = prev( 2 );
       
     %w(x^n)=c0(dt/dx)*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
     %where c0=-1, an eigen value of A and the slope of the characteristic
@@ -147,8 +147,8 @@ for n=1:N
                             U.VelocityEdge1( n , j ) } ) )';
                       
     %check to ensure press/vel for w/z satisfy IC
-    C.w1( 1 , b ) = next( 1 );
-    C.z1( 1 , b ) = next( 2 );
+    %C.w1( 1 , b ) = next( 1 );
+    %C.z1( 1 , b ) = next( 2 );
     
     %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
     curr = c0z * ( k / h ) * ( prev - next ) + prev;
@@ -164,8 +164,8 @@ for n=1:N
                              U.VelocityEdge2( n , j ) } ) )';
                          
     %check to ensure press/vel for w/z satisfy IC
-    C.w2( 1 , a ) = next( 1 );
-    C.z2( 1 , a ) = next( 2 );
+    %C.w2( 1 , a ) = next( 1 );
+    %C.z2( 1 , a ) = next( 2 );
    
     %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
     curr = c0z * ( k / h ) * ( next - prev ) + prev;

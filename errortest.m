@@ -3,8 +3,8 @@ b = 2;
 
 %initialize parameters
 t0 = 0;
-tf = 1;
-L = 2;
+tf = 2;
+L = 50;
  
 
 %define space mesh
@@ -116,7 +116,7 @@ for n=1:N
     %w(x^n)=c0(dt/dx)*(w_(L)-w_(L-1))+w_L...linear interpolation for known char
     %where c0=-1, an eigen value of A and the slope of the characteristic
     curr = c0w * ( k / h ) * ( prev - next ) + prev;
-    
+   
     %set w char value at vertex  
     C.w1( n + 1 , a ) = curr( 1 );
         
@@ -155,7 +155,7 @@ for n=1:N
     C.z1( 1 , b ) = next( 2 );
     
     %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
-    curr = c0z * ( k / h ) * ( prev - next ) + prev;
+    curr = c0z * ( k / h ) * ( prev - next ) + next;
     
     %set w char value at vertex 
     C.z1( n + 1 , b ) = curr( 2 );
@@ -172,7 +172,7 @@ for n=1:N
     C.z2( 1 , a ) = next( 2 );
    
     %z(x^n)=mu*(z_(L)-z_(L-1))+z_L...linear interpolation for known char
-    curr = c0z * ( k / h ) * ( next - prev ) + prev;
+    curr = c0z * ( k / h ) * ( prev - next ) + next;
     
     %set w char value at vertex 
     C.z2( n + 1 , a ) = curr( 2 );
@@ -240,7 +240,7 @@ for n=1:N
     U.VelocityEdge2( n + 1 , 1 ) = newU( 2 );
     
     
-%calculate exact solution using known solutions for w,z
+    %calculate exact solution using known solutions for w,z
     wX = x - c0w * t( n );
     zX = x - c0z * t( n );
     wexact = ( -sin( pi * wX) + 1 )';
@@ -255,10 +255,8 @@ for n=1:N
     
 end
 %calculate the max abs error
-abserrPE1 = ( abs( E.ExactPressureEdge1 - U.PressureEdge1 ) )
-abserrPE1 = max(abserrPE1)
-
-
+abserrPE1 = ( abs( E.ExactPressureEdge1 - U.PressureEdge1 ) );
+abserrPE1 =max( max(abserrPE1))
 
 
 clf
@@ -267,29 +265,18 @@ for i=1:N+1
     plot( x ( 1 : L + 1 ) , U.PressureEdge1( i , : ) , 'b',...
           x ( L + 1 : end ) , U.PressureEdge2( i , : ) , 'g',...
           x ( 1 : L + 1 ) , U.VelocityEdge1( i , : ) , 'r',...
-          x ( L + 1 : end ) , U.VelocityEdge2( i , : ) , 'm')
+          x ( L + 1 : end ) , U.VelocityEdge2( i , : ) , 'm',...
+          x ( 1 : L + 1 ) , E.ExactPressureEdge1( i , : ) , 'b',...
+          x ( L + 1 : end ) , E.ExactPressureEdge2( i , : ) , 'g',...
+          x ( 1 : L + 1 ) , E.ExactVelocityEdge1( i , : ) , 'r',...
+          x ( L + 1 : end ) , E.ExactVelocityEdge2( i , : ) , 'm')
       
-     
-	axis( [ 0  1  0 1.5 ])
+	axis( [ 0  1  -2 2 ])
     pause( .05 )
     drawnow
     
 end
 hold off
 
-RiPE1 = zeros( N/2 + 1 ,1 );
-%RiVE1 = zeros( N + 1 ,1 );
-%RiPE2 = zeros( N + 1 ,1 );
-%RiVE2 = zeros( N + 1 ,1 );
 
-RiPE1( 1 ) = abserrPE1( 1 )
-%RiVE1( 1 ) = abserrVE1( 1 );
-%RiPE2( 1 ) = abserrPE2( 1 );
-%RiVE2( 1 ) = abserrVE2( 1 );
 
-for k=2:N/2+1
-    RiPE1(k) = (1/log(2))*(log(abserrPE1(k - 1) / abserrPE1(k)));
-    %RiVE1(k) = (1/log(2))*(log(ErrorPE1(k - 1) / ErrorPE1(k)));
-    %RiPE2(k) = (1/log(2))*(log(ErrorPE1(k - 1) / ErrorPE1(k)));
-    %RiVE2(k) = (1/log(2))*(log(ErrorPE1(k - 1) / ErrorPE1(k)));
-end
