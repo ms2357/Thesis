@@ -103,14 +103,14 @@ for n=1:N
     j = 1;
 
     %calc  w char using pres/vel for egde 1 at vertex a
-    prev = R * ( cell2mat( { U.PressureEdge1( n , j ),...
+    prev = RI * ( cell2mat( { U.PressureEdge1( n , j ),...
                              U.VelocityEdge1( n , j ) } ) )';
     
     %check to ensure press/vel for w/z satisfy IC
     C.w1( 1 , a ) = prev( 1 );
     C.z1( 1 , a ) = prev( 2 );
     
-    next = R *( cell2mat( { U.PressureEdge1( n , j + 1 ),...
+    next = RI *( cell2mat( { U.PressureEdge1( n , j + 1 ),...
                              U.VelocityEdge1( n , j + 1 ) } ) )';
    
     %w(x^n)=c0(dt/dx)*(w_(L)-w_(L-1))+w_L...linear interpolation for known char
@@ -121,10 +121,10 @@ for n=1:N
     C.w1( n + 1 , a ) = curr( 1 );
         
     %calc w char using pres/vel for edge 2 at vertex b
-    prev = R * ( cell2mat( { U.PressureEdge2( n , j ),...
+    prev = RI * ( cell2mat( { U.PressureEdge2( n , j ),...
                              U.VelocityEdge2( n , j ) } ) )';
       
-    next = R * ( cell2mat( { U.PressureEdge2( n , j + 1 ),...
+    next = RI * ( cell2mat( { U.PressureEdge2( n , j + 1 ),...
                              U.VelocityEdge2( n , j + 1 ) } ) )';
    
     %check to ensure press/vel for w/z satisfy IC
@@ -144,10 +144,10 @@ for n=1:N
     j = L + 1;
     
     %calc z char using pres/vel for edge 1 at vertex b 
-    prev = R * ( cell2mat( { U.PressureEdge1( n , j - 1 ),...
+    prev = RI * ( cell2mat( { U.PressureEdge1( n , j - 1 ),...
                              U.VelocityEdge1( n , j - 1 ) } ) )';
    
-    next = R * (cell2mat( { U.PressureEdge1( n , j ),...
+    next = RI * (cell2mat( { U.PressureEdge1( n , j ),...
                             U.VelocityEdge1( n , j ) } ) )';
                       
     %check to ensure press/vel for w/z satisfy IC
@@ -161,10 +161,10 @@ for n=1:N
     C.z1( n + 1 , b ) = curr( 2 );
     
     %calc chars using pres/vel for edge 2 at vertex a
-    prev = R * ( cell2mat( { U.PressureEdge2( n , j - 1 ),...
+    prev = RI * ( cell2mat( { U.PressureEdge2( n , j - 1 ),...
                              U.VelocityEdge2( n , j - 1 ) } ) )';
                          
-    next = R * ( cell2mat( { U.PressureEdge2( n , j ),...
+    next = RI * ( cell2mat( { U.PressureEdge2( n , j ),...
                              U.VelocityEdge2( n , j ) } ) )';
                          
     %check to ensure press/vel for w/z satisfy IC
@@ -196,7 +196,7 @@ for n=1:N
     newC = ( cell2mat( { C.w1( n + 1 , a ),...
                          C.z1( n + 1 , a ) } ) )';
                      
-    newU = R \ newC;
+    newU = R * newC;
     U.PressureEdge1( n + 1 , 1 ) = newU( 1 );
     U.VelocityEdge1( n + 1 , 1 ) = newU( 2 );
     
@@ -204,7 +204,7 @@ for n=1:N
     newC = ( cell2mat( { C.w2( n + 1 , a ),...
                          C.z2( n + 1 , a ) } ) )';
                      
-    newU = R \ newC;
+    newU = R * newC;
     U.PressureEdge2( n + 1 , L + 1 ) = newU( 1 );
     U.VelocityEdge2( n + 1 , L + 1 ) = newU( 2 );
     
@@ -227,7 +227,7 @@ for n=1:N
     newC = ( cell2mat( { C.w1( n + 1 , b ),...
                          C.z1( n + 1 , b ) } ) )';
                      
-    newU = R \ newC;
+    newU = R * newC;
     U.PressureEdge1( n + 1 , L + 1 ) = newU( 1 );
     U.VelocityEdge1( n + 1 , L + 1 ) = newU( 2 );
    
@@ -235,7 +235,7 @@ for n=1:N
     newC = ( cell2mat( { C.w2( n + 1 , b ),...
                          C.z2( n + 1 , b ) } ) )';
                      
-    newU = R \ newC;
+    newU = R * newC;
     U.PressureEdge2( n + 1 , 1 ) = newU( 1 );
     U.VelocityEdge2( n + 1 , 1 ) = newU( 2 );
     
@@ -243,9 +243,9 @@ for n=1:N
     %calculate exact solution using known solutions for w,z
     wX = x - c0w * t( n );
     zX = x - c0z * t( n );
-    wexact = ( -sin( pi * wX) + 1 )';
-    zexact = ( sin ( pi * zX ) + 1 )';
-    uexact= R \ [ wexact ; zexact ];
+    wexact = ( -.5*sin( pi * wX) + .5 )';
+    zexact = ( .5*sin ( pi * zX ) + .5 )';
+    uexact= RI * [ wexact ; zexact ];
     
     E.ExactPressureEdge1( n , : ) =  uexact( 1 , 1 : L + 1 );
     E.ExactVelocityEdge1( n , : ) =  uexact( 2 , 1 : L + 1 );
