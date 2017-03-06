@@ -10,7 +10,7 @@ L = 50;
 %define space mesh
 %h = 1 / L;
 %x = 0 : h / 2 : 1;
-x = linspace(0,2*pi,L+1);
+x = linspace(0,1,L+1);
 x = x';
 h = x(2)-x(1);
 
@@ -47,10 +47,10 @@ U =struct('PressureEdge1',zeros( N + 1 , L + 1 ),...
           'VelocityEdge1',zeros( N + 1 , L + 1 ),...
           'PressureEdge2',zeros( N + 1 , L + 1 ),...
           'VelocityEdge2',zeros( N + 1 , L + 1 ));
-U( : ).PressureEdge1( 1 , : ) = InitialPressure( 1 : L + 1 );
-U( : ).VelocityEdge1( 1 , : ) = InitialVelocity( 1 : L + 1 );
-U( : ).PressureEdge2( 1 , : ) = InitialPressure( L + 1 : end );
-U( : ).VelocityEdge2( 1 , : ) = InitialVelocity( L + 1 : end );
+U( : ).PressureEdge1( 1 , : ) = InitialPressure;
+U( : ).VelocityEdge1( 1 , : ) = InitialVelocity;
+U( : ).PressureEdge2( 1 , : ) = InitialPressure;
+U( : ).VelocityEdge2( 1 , : ) = InitialVelocity;
 
 
 
@@ -250,10 +250,10 @@ for n=1:N
     zexact = ( sin ( 2*pi * zX ) + 1 )';
     uexact= RI * [ wexact ; zexact ];
     
-    E.ExactPressureEdge1( n , : ) =  uexact( 1 , 1 : L + 1 );
-    E.ExactVelocityEdge1( n , : ) =  uexact( 2 , 1 : L + 1 );
-    E.ExactPressureEdge2( n , : ) =  uexact( 1 , L + 1 : end );
-    E.ExactVelocityEdge2( n , : ) =  uexact( 2 , L + 1 : end );    
+    E.ExactPressureEdge1 ( n , : ) =  uexact(1,:);
+    E.ExactVelocityEdge1( n , : ) =  uexact(2,:);
+    E.ExactPressureEdge2( n , : ) =  uexact(1,:);
+    E.ExactVelocityEdge2( n , : ) =  uexact(2,:);    
      
     
 end
@@ -265,16 +265,16 @@ abserrPE1 = max( max(abserrPE1));
 clf
 for i=1:N+1
     
-    plot( x ( 1 : L + 1 ) , U.PressureEdge1( i , : ) , 'b',...
-          x ( L + 1 : end ) , U.PressureEdge2( i , : ) , 'g',...
-          x ( 1 : L + 1 ) , U.VelocityEdge1( i , : ) , 'r',...
-          x ( L + 1 : end ) , U.VelocityEdge2( i , : ) , 'm',...
-          x ( 1 : L + 1 ) , E.ExactPressureEdge1( i , : ) , 'k',...
-          x ( L + 1 : end ) , E.ExactPressureEdge2( i , : ) , 'k',...
-          x ( 1 : L + 1 ) , E.ExactVelocityEdge1( i , : ) , 'k',...
-          x ( L + 1 : end ) , E.ExactVelocityEdge2( i , : ) , 'k')
+    plot( x  , U.PressureEdge1( i , : ) , 'b',...
+          x+1  , U.PressureEdge2( i , : ) , 'g',...
+          x  , U.VelocityEdge1( i , : ) , 'r',...
+          x +1 , U.VelocityEdge2( i , : ) , 'm',...
+          x  , E.ExactPressureEdge1( i , : ) , 'k',...
+          x +1 , E.ExactPressureEdge2( i , : ) , 'k',...
+          x  , E.ExactVelocityEdge1( i , : ) , 'k',...
+          x +1 , E.ExactVelocityEdge2( i , : ) , 'k')
       
-	axis( [ 0  2*pi  -2 2 ])
+	axis( [ 0  2 -2 2 ])
     pause( .05 )
     drawnow
     
