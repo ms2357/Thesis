@@ -12,8 +12,8 @@
 %   L:number of spatial grid points 
 %   N: number of time grid points
 %   f: function that gives inital data
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%testtest
 %initialize parameters
 t0=0;
 tf=1;
