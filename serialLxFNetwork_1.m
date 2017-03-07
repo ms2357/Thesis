@@ -4,16 +4,18 @@ b = 2;
 %initialize parameters
 t0 = 0;
 tf = 1;
-L = 50;
+L = 400;
  
 
 %define space mesh
-h = 1 / L;
-x = 0 : h / 2 : 1;
+%h = 1 / L;
+%x = 0 : h / 2 : 1;
+x = linspace( 0 , 1 , L + 1 );
 x = x';
+h = x( 2 ) - x( 1 );
 
 %set inital funcitons  
-InitialPressure = sin( pi * x );
+InitialPressure = sin( 2*pi * x );
 InitialVelocity = ones( 1 , length( x ) );
 
 % define time mesh
@@ -32,8 +34,7 @@ Z2 = rho2 * K2;
 
 A = [ 0 K1 ; 1 / rho1 0 ];       %wave speed
 R = [ -Z1 Z1 ; 1 1 ];
-RI = (1/(-Z1*1-1*Z1))*[ 1   -Z1;
-                       -1  -Z1];
+RI = inv(R);
 evaluesA = eig( A );
 c0w = evaluesA( 1 );
 c0z = evaluesA( 2 );
@@ -46,10 +47,10 @@ U =struct('PressureEdge1',zeros( N + 1 , L + 1 ),...
           'VelocityEdge1',zeros( N + 1 , L + 1 ),...
           'PressureEdge2',zeros( N + 1 , L + 1 ),...
           'VelocityEdge2',zeros( N + 1 , L + 1 ));
-U( : ).PressureEdge1( 1 , : ) = InitialPressure( 1 : L + 1 );
-U( : ).VelocityEdge1( 1 , : ) = InitialVelocity( 1 : L + 1 );
-U( : ).PressureEdge2( 1 , : ) = InitialPressure( L + 1 : end );
-U( : ).VelocityEdge2( 1 , : ) = InitialVelocity( L + 1 : end );
+U( : ).PressureEdge1( 1 , : ) = InitialPressure;
+U( : ).VelocityEdge1( 1 , : ) = InitialVelocity;
+U( : ).PressureEdge2( 1 , : ) = InitialPressure;
+U( : ).VelocityEdge2( 1 , : ) = InitialVelocity;
 
 
 
@@ -105,14 +106,14 @@ for n=1:N
     j = 1;
 
     %calc  w char using pres/vel for egde 1 at vertex a
-    prev = RI * ( cell2mat( { U.PressureEdge1( n , j ),...
+    prev = R * ( cell2mat( { U.PressureEdge1( n , j ),...
                              U.VelocityEdge1( n , j ) } ) )';
     
     %check to ensure press/vel for w/z satisfy IC
     C.w1( 1 , a ) = prev( 1 );
     C.z1( 1 , a ) = prev( 2 );
     
-    next = RI *( cell2mat( { U.PressureEdge1( n , j + 1 ),...
+    next = R *( cell2mat( { U.PressureEdge1( n , j + 1 ),...
                              U.VelocityEdge1( n , j + 1 ) } ) )';
    
     %w(x^n)=c0(dt/dx)*(w_(L)-w_(L-1))+w_L...linear interpolation for known char
@@ -123,10 +124,10 @@ for n=1:N
     C.w1( n + 1 , a ) = curr( 1 );
         
     %calc w char using pres/vel for edge 2 at vertex b
-    prev = RI * ( cell2mat( { U.PressureEdge2( n , j ),...
+    prev = R * ( cell2mat( { U.PressureEdge2( n , j ),...
                              U.VelocityEdge2( n , j ) } ) )';
       
-    next = RI * ( cell2mat( { U.PressureEdge2( n , j + 1 ),...
+    next = R * ( cell2mat( { U.PressureEdge2( n , j + 1 ),...
                              U.VelocityEdge2( n , j + 1 ) } ) )';
    
     %check to ensure press/vel for w/z satisfy IC
@@ -146,10 +147,10 @@ for n=1:N
     j = L + 1;
     
     %calc z char using pres/vel for edge 1 at vertex b 
-    prev = RI * ( cell2mat( { U.PressureEdge1( n , j - 1 ),...
+    prev = R * ( cell2mat( { U.PressureEdge1( n , j - 1 ),...
                              U.VelocityEdge1( n , j - 1 ) } ) )';
    
-    next = RI * (cell2mat( { U.PressureEdge1( n , j ),...
+    next = R * (cell2mat( { U.PressureEdge1( n , j ),...
                             U.VelocityEdge1( n , j ) } ) )';
                       
     %check to ensure press/vel for w/z satisfy IC
@@ -163,10 +164,10 @@ for n=1:N
     C.z1( n + 1 , b ) = curr( 2 );
     
     %calc chars using pres/vel for edge 2 at vertex a
-    prev = RI * ( cell2mat( { U.PressureEdge2( n , j - 1 ),...
+    prev = R * ( cell2mat( { U.PressureEdge2( n , j - 1 ),...
                              U.VelocityEdge2( n , j - 1 ) } ) )';
                          
-    next = RI * ( cell2mat( { U.PressureEdge2( n , j ),...
+    next = R * ( cell2mat( { U.PressureEdge2( n , j ),...
                              U.VelocityEdge2( n , j ) } ) )';
                          
     %check to ensure press/vel for w/z satisfy IC
@@ -198,7 +199,7 @@ for n=1:N
     newC = ( cell2mat( { C.w1( n + 1 , a ),...
                          C.z1( n + 1 , a ) } ) )';
                      
-    newU = R * newC;
+    newU = RI * newC;
     U.PressureEdge1( n + 1 , 1 ) = newU( 1 );
     U.VelocityEdge1( n + 1 , 1 ) = newU( 2 );
     
@@ -206,7 +207,7 @@ for n=1:N
     newC = ( cell2mat( { C.w2( n + 1 , a ),...
                          C.z2( n + 1 , a ) } ) )';
                      
-    newU = R * newC;
+    newU = RI * newC;
     U.PressureEdge2( n + 1 , L + 1 ) = newU( 1 );
     U.VelocityEdge2( n + 1 , L + 1 ) = newU( 2 );
     
@@ -229,7 +230,7 @@ for n=1:N
     newC = ( cell2mat( { C.w1( n + 1 , b ),...
                          C.z1( n + 1 , b ) } ) )';
                      
-    newU = R * newC;
+    newU = RI * newC;
     U.PressureEdge1( n + 1 , L + 1 ) = newU( 1 );
     U.VelocityEdge1( n + 1 , L + 1 ) = newU( 2 );
    
@@ -237,43 +238,51 @@ for n=1:N
     newC = ( cell2mat( { C.w2( n + 1 , b ),...
                          C.z2( n + 1 , b ) } ) )';
                      
-    newU = R * newC;
+    newU = RI * newC;
     U.PressureEdge2( n + 1 , 1 ) = newU( 1 );
     U.VelocityEdge2( n + 1 , 1 ) = newU( 2 );
     
-    
-    %calculate exact solution using known solutions for w,z
-    wX = x - c0w * t( n );
-    zX = x - c0z * t( n );
-    wexact = ( -.5*sin( pi * wX) + .5 )';
-    zexact = ( .5*sin ( pi * zX ) + .5 )';
-    uexact= RI * [ wexact ; zexact ];
-    
-    E.ExactPressureEdge1( n , : ) =  uexact( 1 , 1 : L + 1 );
-    E.ExactVelocityEdge1( n , : ) =  uexact( 2 , 1 : L + 1 );
-    E.ExactPressureEdge2( n , : ) =  uexact( 1 , L + 1 : end );
-    E.ExactVelocityEdge2( n , : ) =  uexact( 2 , L + 1 : end );    
-     
+      
     
 end
-%calculate the max abs error
-abserrPE1 = ( abs( E.ExactPressureEdge1 - U.PressureEdge1 ) );
-abserrPE1 = max( max(abserrPE1));
 
+
+%calculate exact solution using known solutions for w,z
+for n =1:N+1 
+    wX = x - c0w * t( n );
+    zX = x - c0z * t( n );
+    wexact = ( -sin( 2*pi * wX) + 1 )';
+    zexact = ( sin ( 2*pi * zX ) + 1 )';
+    uexact= RI * [ wexact ; zexact ];
+    
+    E.ExactPressureEdge1( n , : ) =  uexact(1,:);
+    E.ExactVelocityEdge1( n , : ) =  uexact(2,:);
+    E.ExactPressureEdge2( n , : ) =  uexact(1,:);
+    E.ExactVelocityEdge2( n , : ) =  uexact(2,:); 
+end
+%calculate the max abs error
+abserrPE1 = max(max(( abs( E.ExactPressureEdge1 - U.PressureEdge1 ))))
+%errPE1(mm) = abserrPE1;
+abserrVE1  = max(max(( abs( E.ExactVelocityEdge1 - U.VelocityEdge1 ))))
+%errVE1(mm) = abserrVE1;
+abserrPE2 = max(max(( abs( E.ExactPressureEdge2 - U.PressureEdge2 ))))
+%errPE2(mm) = abserrPE2;
+abserrVE2 = max(max(( abs( E.ExactVelocityEdge2 - U.VelocityEdge2 ))))
+%errVE2(mm) = abserrVE2;
 
 clf
 for i=1:N+1
     
-    plot( x ( 1 : L + 1 ) , U.PressureEdge1( i , : ) , 'b',...
-          x ( L + 1 : end ) , U.PressureEdge2( i , : ) , 'g',...
-          x ( 1 : L + 1 ) , U.VelocityEdge1( i , : ) , 'r',...
-          x ( L + 1 : end ) , U.VelocityEdge2( i , : ) , 'm',...
-          x ( 1 : L + 1 ) , E.ExactPressureEdge1( i , : ) , 'k',...
-          x ( L + 1 : end ) , E.ExactPressureEdge2( i , : ) , 'k',...
-          x ( 1 : L + 1 ) , E.ExactVelocityEdge1( i , : ) , 'k',...
-          x ( L + 1 : end ) , E.ExactVelocityEdge2( i , : ) , 'k')
+    plot( x  , U.PressureEdge1( i , : ) , 'b',...
+          x+1  , U.PressureEdge2( i , : ) , 'g',...
+          x  , U.VelocityEdge1( i , : ) , 'r',...
+          x +1 , U.VelocityEdge2( i , : ) , 'm',...
+          x  , E.ExactPressureEdge1( i , : ) , 'k',...
+          x +1 , E.ExactPressureEdge2( i , : ) , 'k',...
+          x  , E.ExactVelocityEdge1( i , : ) , 'k',...
+          x +1 , E.ExactVelocityEdge2( i , : ) , 'k')
       
-	axis( [ 0  1  -2 2 ])
+	axis( [ 0  2 -2 2 ])
     pause( .05 )
     drawnow
     

@@ -332,12 +332,12 @@ end
 abserr =[ errPE1;
           errVE1;
           errPE2;
-          errVE2]
+          errVE2];
 
-RiPE1 = zeros( 1 , mm );
-RiVE1 = zeros( 1 , mm );
-RiPE2 = zeros( 1 , mm );
-RiVE2 = zeros( 1 , mm );
+RiPE1 = zeroes( 1 , mm );
+RiVE1 = zeroes( 1 , mm );
+RiPE2 = zeroes( 1 , mm );
+RiVE2 = zeroes( 1 , mm );
       
       
 RiPE1( 1 ) = errPE1( 1 );
@@ -347,14 +347,9 @@ RiVE2( 1 ) = errVE2( 1 );
 
 for k=2:mm
     RiPE1(k) = (1/log(2))*(log(errPE1(k - 1) / errPE1(k)));
-    RiVE1(k) = (1/log(2))*(log(errVE1(k - 1) / errVE1(k)));
-    RiPE2(k) = (1/log(2))*(log(errPE2(k - 1) / errPE2(k)));
-    RiVE2(k) = (1/log(2))*(log(errVE2(k - 1) / errVE2(k)));
+    RiVE1(k) = (1/log(2))*(log(errPE1(k - 1) / errPE1(k)));
+    RiPE2(k) = (1/log(2))*(log(errPE1(k - 1) / errPE1(k)));
+    RiVE2(k) = (1/log(2))*(log(errPE1(k - 1) / errPE1(k)));
 end
-
-RiPE1( 1 )
-RiVE1( 1 )
-RiPE2( 1 )
-RiVE2( 1 )
        
        
