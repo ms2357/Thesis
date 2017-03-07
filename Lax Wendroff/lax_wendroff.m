@@ -1,3 +1,4 @@
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Description: This script implements the Lax Friedrich method to 
 % numerically solve the scalar advection equation u_t + au_x = 0. 
