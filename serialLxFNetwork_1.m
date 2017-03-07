@@ -4,7 +4,7 @@ b = 2;
 %initialize parameters
 t0 = 0;
 tf = 1;
-L = 50;
+L = 25;
  
 
 %define space mesh
