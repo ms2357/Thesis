@@ -352,9 +352,9 @@ for k=2:mm
     RiVE2(k) = (1/log(2))*(log(errVE2(k - 1) / errVE2(k)));
 end
 
-RiPE1( 1 )
-RiVE1( 1 )
-RiPE2( 1 )
-RiVE2( 1 )
+orderPE1 = RiPE1
+orderVE1 = RiVE1
+orderPE2 = RiPE2
+orderVE2 = RiVE2
        
        
