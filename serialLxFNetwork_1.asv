@@ -1,11 +1,10 @@
-
 a = 1;
 b = 2;
 
 %initialize parameters
 t0 = 0;
 tf = 1;
-L = 400;
+L = 50;
  
 
 %define space mesh
@@ -261,15 +260,6 @@ for n =1:N+1
     E.ExactPressureEdge2( n , : ) =  uexact(1,:);
     E.ExactVelocityEdge2( n , : ) =  uexact(2,:); 
 end
-%calculate the max abs error
-abserrPE1 = max(max(( abs( E.ExactPressureEdge1 - U.PressureEdge1 ))))
-%errPE1(mm) = abserrPE1;
-abserrVE1  = max(max(( abs( E.ExactVelocityEdge1 - U.VelocityEdge1 ))))
-%errVE1(mm) = abserrVE1;
-abserrPE2 = max(max(( abs( E.ExactPressureEdge2 - U.PressureEdge2 ))))
-%errPE2(mm) = abserrPE2;
-abserrVE2 = max(max(( abs( E.ExactVelocityEdge2 - U.VelocityEdge2 ))))
-%errVE2(mm) = abserrVE2;
 
 clf
 for i=1:N+1
@@ -289,4 +279,6 @@ for i=1:N+1
     
 end
 hold off
+
+
 
