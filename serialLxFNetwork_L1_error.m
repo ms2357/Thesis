@@ -321,3 +321,4 @@ for k=2:N+1
     RiVE2(k) = (1/log(2))*(log(ErrorPE1(k - 1) / ErrorPE1(k)));
 end
 
+
