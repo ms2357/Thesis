@@ -1,15 +1,18 @@
 #include "mesh2d.h"
 
-Mesh2D::Mesh2D(double timeStart, double timeEnd, int timeLength,
-               double positionStart, double positionEnd, int positionLength)
+Mesh2D::Mesh2D(double positionStart, double positionEnd, int positionLength,
+               double timeStart, double timeEnd)
 {
-    timeStep = 1.0 / timeLength;
+    positionMesh = VectorXd::LinSpaced(positionLength + 1 , positionStart , positionEnd);
+    positionStep = positionMesh(1)-positionMesh(0);
+
+    //multiple of timeLength is the denom of timeStep
+    timeLength = 2 * positionLength + 1;
+    timeStep = positionStep / 2.0;
     timeMesh = VectorXd::LinSpaced(((timeEnd - timeStart) / timeStep) + 1,
                                    timeStart, timeStart + timeStep * timeLength);
 
-    positionStep = 1.0 / positionLength;
-    positionMesh = VectorXd::LinSpaced(((positionEnd - positionStart) / positionStep) + 1,
-                                       positionStart, positionStart + positionStep * positionLength);
+
 }
 
 VectorXd Mesh2D::getTimeMesh() const { return timeMesh; }
@@ -20,3 +23,4 @@ double Mesh2D::getTimeStep() const { return timeStep; }
 
 double Mesh2D::getPositionStep() const { return positionStep; }
 
+double Mesh2D::getTimeLength() const { return timeLength; }

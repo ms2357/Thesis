@@ -8,18 +8,21 @@ using namespace Eigen;
 class Mesh2D
 {
 public:
-    Mesh2D(double timeStart, double timeEnd, int timeLength,
-           double positionStart, double positionEnd, int positionLength);
+    Mesh2D(double positionStart, double positionEnd, int positionLength,
+           double timeStart, double timeEnd);
+
     VectorXd getTimeMesh() const;
     VectorXd getPositionMesh() const;
     double getTimeStep() const;
     double getPositionStep() const;
+    double getTimeLength() const;
 
 private:
     double timeStep;
     VectorXd timeMesh;
     double positionStep;
     VectorXd positionMesh;
+    double timeLength;
 };
 
 #endif // MESH2D_H
