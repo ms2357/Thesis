@@ -19,33 +19,31 @@ int main()
     double t0 = 0.0, tf = 1.0;             // time interval
     double x0 = 0.0, xf = 1.0; int L = 4; // space interval
     Mesh2D mesh(x0, xf, L,t0, tf);
-    double N = mesh.getTimeLength();
+    double N = mesh.getTimeLength();     //number of time intervals
+
 
     /* Wave speed details */
-    double rho0 = 1.0, K0 = 1.0;
-    WaveSpeed waveSpeedDetails(rho0, K0);
+    double rho1 = 1.0, K1 = 1.0, rho2 = 1.0, K2 = 1.0;
+    WaveSpeed waveSpeedDetails(rho1, K1, rho2, K2);
 
     /* Setup matrix U, holds pressure and velocity */
     VectorXd initialPressure = (2 * M_PI * mesh.getPositionMesh()).array().sin();
     VectorXd initialVelocity = MatrixXd::Ones(1 , mesh.getPositionMesh().size());
-    UMatrix U(initialPressure, initialVelocity, N, L);
+    UMatrix UEdge1(initialPressure, initialVelocity, N, L);
+    UMatrix UEdge2(initialPressure, initialVelocity, N, L);
 
-    /* Impose boundary conditions and setup characteristic matrix */
-    MatrixXd bd0(2, mesh.getTimeMesh().size());
-    bd0.row(0) = (M_PI * mesh.getTimeMesh()).array().sin();
-    bd0.row(1) = (M_PI * mesh.getTimeMesh()).array().cos();
-    bd0 = waveSpeedDetails.getR() * bd0;
-    MatrixXd bdL(2, mesh.getTimeMesh().size());
-    bdL.row(0) = (M_PI * (L - mesh.getTimeMesh().array())).sin();
-    bdL.row(1) = (M_PI * (L - mesh.getTimeMesh().array())).cos();
-    bdL = waveSpeedDetails.getR() * bdL;
-    CharacteristicMatrix C(bd0, bdL);
+    /* Setup characteristic matrix */
+    MatrixXd CharacteristicMatrixEdge1W = MatrixXd::Zero(N,2);
+    MatrixXd CharacteristicMatrixEdge1Z = MatrixXd::Zero(N,2);
+    MatrixXd CharacteristicMatrixEdge2W = MatrixXd::Zero(N,2);
+    MatrixXd CharacteristicMatrixEdge2Z = MatrixXd::Zero(N,2);
 
-    laxfriedrichs(mesh, waveSpeedDetails, U, C);
-    std::cout << "Pressure matrix:" << std::endl;
-    std::cout << U.getPressure() << std::endl;
-    std::cout << "Velocity matrix:" << std::endl;
-    std::cout << U.getVelocity() << std::endl;
+    /*Run LxF method for solving interterior nodes */
+    laxfriedrichs(mesh, waveSpeedDetails, UEdge1, UEdge2, CharacteristicMatrixEdge1W, CharacteristicMatrixEdge1Z, CharacteristicMatrixEdge2W, CharacteristicMatrixEdge2Z);
+    //std::cout << "Pressure matrix:" << std::endl;
+    //std::cout << U.getPressure() << std::endl;
+    //std::cout << "Velocity matrix:" << std::endl;
+    //std::cout << U.getVelocity() << std::endl;
 
     return 0;
 

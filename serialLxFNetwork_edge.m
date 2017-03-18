@@ -219,7 +219,7 @@ for n=1:N
     %multiply by coefficient matrix
     knownchars = [ -Z2 -Z1 ; 1 -1 ] * knownchars;
     %solve
-    unkchars = [ -Z1 -Z2 ; 1 -1 ] \ knownchars;
+    unkchars = [ -Z2 -Z1 ; 1 -1 ] \ knownchars;
     C.w1( n + 1 , b ) = unkchars( 1 );
     C.z2( n + 1 , b ) = unkchars( 2 );
     
@@ -233,7 +233,8 @@ for n=1:N
     U.VelocityEdge1( n + 1 , L + 1 ) = newU( 2 );
     
     
-    
+    %**********************************************************************
+    %decide how to do this function****************
     
     
     %EDGE2
