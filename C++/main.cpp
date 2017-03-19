@@ -19,7 +19,7 @@ int main()
     double t0 = 0.0, tf = 1.0;             // time interval
     double x0 = 0.0, xf = 1.0; int L = 4; // space interval
     Mesh2D mesh(x0, xf, L,t0, tf);
-    double N = mesh.getTimeLength();     //number of time intervals
+    double N = mesh.getTimeLength()-1;     //number of time intervals
 
 
     /* Wave speed details */

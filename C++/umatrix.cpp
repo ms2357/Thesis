@@ -1,5 +1,6 @@
 #include "umatrix.h"
-
+/*set up for the U matrix which holds the pressure and velocity on each edge, fucntion setPoint allows
+for easy updating of each node, interior and boundary*/
 UMatrix::UMatrix(VectorXd initialPressure, VectorXd initialVelocity, int N, int L)
 {
     pressure.resize(N + 1, L + 1);

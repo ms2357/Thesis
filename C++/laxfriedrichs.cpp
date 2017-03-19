@@ -1,5 +1,7 @@
 #include "laxfriedrichs.h"
-
+/*Implements the Lax Friedrichs method for solving the interior nodes, while the boundaries for each edge are
+handled using the junction conditions via the functions for calculating the known/unk characteristic variables
+then solving the system of equations governed by continuity of pressre and conservation of momentum*/
 /*LxF Method*/
 void laxfriedrichs(const Mesh2D& mesh, const WaveSpeed& waveSpeedDetails, UMatrix& UEdge1, UMatrix& UEdge2,
                    MatrixXd CharacteristicMatrixEdge1W, MatrixXd CharacteristicMatrixEdge1Z,

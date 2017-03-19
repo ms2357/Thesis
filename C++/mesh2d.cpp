@@ -1,5 +1,5 @@
 #include "mesh2d.h"
-
+/*set up for the time and space meshes*/
 Mesh2D::Mesh2D(double positionStart, double positionEnd, int positionLength,
                double timeStart, double timeEnd)
 {

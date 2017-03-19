@@ -1,5 +1,6 @@
 #include "wavespeed.h"
-
+/*setup and store all of the details related to the wave speed, impedence, and coefficient matrices
+ * used to solve the system of equations governed by continuity of pressure and conservation of momentum*/
 WaveSpeed::WaveSpeed(double density1, double bulkModulus1, double density2, double bulkModulus2)
 {
     double impedence1 = density1 * bulkModulus1;

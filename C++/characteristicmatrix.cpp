@@ -1,4 +1,6 @@
 #include "characteristicmatrix.h"
+/*defines the matrix that hold the value of the characteristic variables on the boundaries,
+ * allows updates via set functions*/
 
 CharacteristicMatrix::CharacteristicMatrix(MatrixXd bd0, MatrixXd bdL)
 {
