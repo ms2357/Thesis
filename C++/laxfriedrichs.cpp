@@ -1,11 +1,11 @@
 #include "laxfriedrichs.h"
+
 /*Implements the Lax Friedrichs method for solving the interior nodes, while the boundaries for each edge are
 handled using the junction conditions via the functions for calculating the known/unk characteristic variables
-then solving the system of equations governed by continuity of pressre and conservation of momentum*/
+then solving the system of equations governed by continuity of pressure and conservation of momentum*/
 /*LxF Method*/
 void laxfriedrichs(const Mesh2D& mesh, const WaveSpeed& waveSpeedDetails, UMatrix& UEdge1, UMatrix& UEdge2,
-                   MatrixXd CharacteristicMatrixEdge1W, MatrixXd CharacteristicMatrixEdge1Z,
-                   MatrixXd CharacteristicMatrixEdge2W, MatrixXd CharacteristicMatrixEdge2Z)
+                   CharacteristicMatrix& CharacteristicsEdge1, CharacteristicMatrix& CharacteristicsEdge2)
 {
     MatrixXd mu = calculateCFL(mesh, waveSpeedDetails.getA());
     int N = mesh.getTimeMesh().rows() - 1;
@@ -16,21 +16,14 @@ void laxfriedrichs(const Mesh2D& mesh, const WaveSpeed& waveSpeedDetails, UMatri
             updateInteriorPoint(i, j, UEdge2, mu);
 
         }
-        calculateKnownCharacteristics(i, L, UEdge1, CharacteristicMatrixEdge1W, CharacteristicMatrixEdge1Z,
-                                 waveSpeedDetails.getR(), waveSpeedDetails.getc0w(), waveSpeedDetails.getc0z(),
+        calcKnownCharacteristics(i, L, UEdge1, CharacteristicsEdge1, waveSpeedDetails.getR(), waveSpeedDetails.getc0w(), waveSpeedDetails.getc0z(),
                                  mesh.getTimeStep(), mesh.getPositionStep());
-        calculateKnownCharacteristics(i, L, UEdge2, CharacteristicMatrixEdge2W, CharacteristicMatrixEdge2Z,
-                                 waveSpeedDetails.getR(), waveSpeedDetails.getc0w(), waveSpeedDetails.getc0z(),
+        calcKnownCharacteristics(i, L, UEdge2, CharacteristicsEdge2, waveSpeedDetails.getR(), waveSpeedDetails.getc0w(), waveSpeedDetails.getc0z(),
                                  mesh.getTimeStep(), mesh.getPositionStep());
-        calculateUnkownCharacteristics(i, UEdge1, CharacteristicMatrixEdge1W, CharacteristicMatrixEdge1Z,
-                                         CharacteristicMatrixEdge2W, CharacteristicMatrixEdge2Z,
-                                        waveSpeedDetails.getZ(), waveSpeedDetails.getZcoefficientMatrix(),
-                                        waveSpeedDetails.getRI());
-        calculateUnkownCharacteristics(i, UEdge2, CharacteristicMatrixEdge1W, CharacteristicMatrixEdge1Z,
-                                         CharacteristicMatrixEdge2W, CharacteristicMatrixEdge2Z,
-                                        waveSpeedDetails.getZ(), waveSpeedDetails.getZcoefficientMatrix(),
-                                        waveSpeedDetails.getRI());
-
+        JunctionConditions(i, UEdge1, CharacteristicsEdge1, CharacteristicsEdge2, waveSpeedDetails.getZ(),
+                           waveSpeedDetails.getZcoefficientMatrix(), waveSpeedDetails.getRI());
+        JunctionConditions(i, UEdge2, CharacteristicsEdge1, CharacteristicsEdge2, waveSpeedDetails.getZ(),
+                           waveSpeedDetails.getZcoefficientMatrix(), waveSpeedDetails.getRI());
     }
 }
 
@@ -51,10 +44,10 @@ void updateInteriorPoint(int i, int j, UMatrix& U, const MatrixXd& mu)
 
 }
 
-void calculateKnownCharacteristics(int i, int L, UMatrix &U, MatrixXd& CharacteristicMatrixW, MatrixXd &CharacteristicMatrixZ,
-                              const MatrixXd &R, double c0w, double c0z, double TimeStep, double PositionStep)
+void calculateKnownCharacteristics(int i, int L, UMatrix &U, CharacteristicMatrix& CharacteristicsEdge1,
+                                   const MatrixXd &R, double c0w, double c0z, double TimeStep, double PositionStep)
 {
-    //calc w char using pres/vel at vertex a
+    //calc w char using pres/vel at right vertex, a
     int a = 0;
     Vector2d previousw(U.getPressure()(i, a),
                       U.getVelocity()(i, a));
@@ -64,9 +57,9 @@ void calculateKnownCharacteristics(int i, int L, UMatrix &U, MatrixXd& Character
     Vector2d nextW = R * nextw;
     Vector2d currentW = c0w * (TimeStep / PositionStep) * (previousW - nextW) + previousW;
     //update w char value at vertex a
-    CharacteristicMatrixW(i + 1, a) = currentW(0);
+    CharacteristicsEdge1.setW(i + 1, a, currentW(0));
 
-    //calc  z char using pres/vel at vertex b
+    //calc  z char using pres/vel at left vertex, b
     int b = L;
     Vector2d previousz(U.getPressure()(i, b - 1),
                       U.getVelocity()(i, b - 1));
@@ -76,26 +69,45 @@ void calculateKnownCharacteristics(int i, int L, UMatrix &U, MatrixXd& Character
     Vector2d nextZ = R * nextz;
     Vector2d currentZ = c0z * (TimeStep / PositionStep) * (previousZ - nextZ) + nextZ;
     //update z char value at vertex b
-    CharacteristicMatrixZ(i + 1, 1) = currentZ(1);
+    CharacteristicsEdge1.setZ(i + 1, 1, currentZ(1));
 
 }
 
-void calculateUnkownCharacteristics(int i, UMatrix & U, MatrixXd& CharacteristicMatrixW1, MatrixXd& CharacteristicMatrixZ1,
-                                    MatrixXd& CharacteristicMatrixW2, MatrixXd& CharacteristicMatrixZ2,
-                                    const MatrixXd& Z, const MatrixXd& ZcoefficientMatrix, const MatrixXd& RI)
+void JunctionConditions(int i, UMatrix& U, CharacteristicMatrix& CharacteristicsEdge1, CharacteristicMatrix& CharacteristicsEdge2,
+                        const MatrixXd& Z, const MatrixXd& ZcoefficientMatrix, const MatrixXd& RI)
 {
-    //calc unk chars at vertex using juction conditions. Solve system Ax=b using interpolated chars at vertex a
-    Vector2d knowncharacteristics(CharacteristicMatrixW1(i + 1, 0), CharacteristicMatrixZ2(i +1, 0));
-    Vector2d KnownCharacteristics = Z * knowncharacteristics;
-    Vector2d UnknownCharacteristics = ZcoefficientMatrix * KnownCharacteristics;
+    /*calc unk chars at vertex using juction conditions. Solve system Ax=b using interpolated chars at right hand
+     * vertex, a*/
+
+    Vector2d knowncharacteristicsA(CharacteristicsEdge1.getW(i + 1, 0), CharacteristicsEdge2.getZ(i +1, 0));
+    Vector2d KnownCharacteristicsA = Z * knowncharacteristicsA;
+    Vector2d UnknownCharacteristicsA = ZcoefficientMatrix * KnownCharacteristicsA;
 
     //set new chars at vertex
-    CharacteristicMatrixW2(i + 1, 0) = UnknownCharacteristics(0);
-    CharacteristicMatrixZ1(i + 1, 0) = UnknownCharacteristics(1);
-    //calc press/vel using chars at vertex a
-    Vector2d newcharacteristics(CharacteristicMatrixW1(i + 1, 0), CharacteristicMatrixZ1(i + 1, 0));
-    Vector2d NewCharacteristics = RI * newcharacteristics;
-    U.setPoint(i + 1,0, NewCharacteristics);
+    CharacteristicsEdge2.setW(i + 1, 0, UnknownCharacteristicsA(0));
+    CharacteristicsEdge1.setZ(i + 1, 0, UnknownCharacteristicsA(1));
+
+    //calc pressure/velocity using chars at vertex a
+    Vector2d newcharacteristicsA(CharacteristicsEdge1.getW(i + 1, 0), CharacteristicsEdge1.getZ(i + 1, 0));
+    Vector2d NewCharacteristicsA = RI * newcharacteristicsA;
+    U.setPoint(i + 1, 0, NewCharacteristicsA);
+
+
+    /*calc unk chars at vertex using juction conditions. Solve system Ax=b using interpolated chars at lefy hand
+     * vertex, b*/
+
+    Vector2d knowncharacteristicsB(CharacteristicsEdge2.getW(i + 1, 1), CharacteristicsEdge1.getZ(i +1, 1));
+    Vector2d KnownCharacteristicsB = Z * knowncharacteristicsB;
+    Vector2d UnknownCharacteristicsB = ZcoefficientMatrix * KnownCharacteristicsB;
+
+    //set new chars at vertex
+    CharacteristicsEdge1.setW(i + 1, 1, UnknownCharacteristicsA(0));
+    CharacteristicsEdge2.setZ(i + 1, 1, UnknownCharacteristicsA(1));
+
+    //calc pressure/velocity using chars at vertex a
+    Vector2d newcharacteristicsB(CharacteristicsEdge1.getW(i + 1, 1), CharacteristicsEdge1.getZ(i + 1, 1));
+    Vector2d NewCharacteristicsB = RI * newcharacteristicsB;
+    U.setPoint(i + 1, 0, NewCharacteristicsB);
 
 
 

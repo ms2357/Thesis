@@ -8,15 +8,17 @@ using namespace Eigen;
 class CharacteristicMatrix
 {
 public:
-    CharacteristicMatrix(MatrixXd bd0, MatrixXd bdL);
-    MatrixXd getW();
-    MatrixXd getZ();
+    CharacteristicMatrix(int N);
+    MatrixXd getW(int i, int j);
+    MatrixXd getZ(int i, int j);
     void setW(int i, int j, double value);
     void setZ(int i, int j, double value);
+
 
 private:
     MatrixXd w;
     MatrixXd z;
+
 };
 
 #endif // CHARACTERISTICMATRIX_H

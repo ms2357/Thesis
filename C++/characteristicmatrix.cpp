@@ -2,17 +2,15 @@
 /*defines the matrix that hold the value of the characteristic variables on the boundaries,
  * allows updates via set functions*/
 
-CharacteristicMatrix::CharacteristicMatrix(MatrixXd bd0, MatrixXd bdL)
+CharacteristicMatrix::CharacteristicMatrix(int N)
 {
-    w.resize(bd0.cols(), 2);
-    w.col(0) = bd0.row(0);
-    z.resize(bdL.cols(), 2);
-    z.col(1) = bdL.row(1);
+    W = MatrixXd::Zero(N,2);
+    Z = MatrixXd::Zero(N,2);
 }
 
-MatrixXd CharacteristicMatrix::getW() { return w; }
+MatrixXd CharacteristicMatrix::getW(int i, int j) { return w(i, j); }
 
-MatrixXd CharacteristicMatrix::getZ() { return z; }
+MatrixXd CharacteristicMatrix::getZ(int i, int j) { return z(i, j); }
 
 void CharacteristicMatrix::setW(int i, int j, double value)
 {

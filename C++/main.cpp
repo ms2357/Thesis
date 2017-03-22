@@ -33,13 +33,12 @@ int main()
     UMatrix UEdge2(initialPressure, initialVelocity, N, L);
 
     /* Setup characteristic matrix */
-    MatrixXd CharacteristicMatrixEdge1W = MatrixXd::Zero(N,2);
-    MatrixXd CharacteristicMatrixEdge1Z = MatrixXd::Zero(N,2);
-    MatrixXd CharacteristicMatrixEdge2W = MatrixXd::Zero(N,2);
-    MatrixXd CharacteristicMatrixEdge2Z = MatrixXd::Zero(N,2);
+    CharacteristicMatrix CharacteristicsEdge1(N);
+    CharacteristicMatrix CharacteristicsEdge2(N);
+
 
     /*Run LxF method for solving interterior nodes */
-    laxfriedrichs(mesh, waveSpeedDetails, UEdge1, UEdge2, CharacteristicMatrixEdge1W, CharacteristicMatrixEdge1Z, CharacteristicMatrixEdge2W, CharacteristicMatrixEdge2Z);
+    laxfriedrichs(mesh, waveSpeedDetails, UEdge1, UEdge2, CharacteristicsEdge1, CharacteristicsEdge2);
     //std::cout << "Pressure matrix:" << std::endl;
     //std::cout << U.getPressure() << std::endl;
     //std::cout << "Velocity matrix:" << std::endl;
