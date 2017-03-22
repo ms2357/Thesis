@@ -4,13 +4,13 @@
 
 CharacteristicMatrix::CharacteristicMatrix(int N)
 {
-    W = MatrixXd::Zero(N,2);
-    Z = MatrixXd::Zero(N,2);
+    w = MatrixXd::Zero(N,2);
+    z = MatrixXd::Zero(N,2);
 }
 
-MatrixXd CharacteristicMatrix::getW(int i, int j) { return w(i, j); }
+double CharacteristicMatrix::getW(int i, int j) { return w(i, j); }
 
-MatrixXd CharacteristicMatrix::getZ(int i, int j) { return z(i, j); }
+double CharacteristicMatrix::getZ(int i, int j) { return z(i, j); }
 
 void CharacteristicMatrix::setW(int i, int j, double value)
 {

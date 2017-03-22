@@ -9,8 +9,8 @@ class CharacteristicMatrix
 {
 public:
     CharacteristicMatrix(int N);
-    MatrixXd getW(int i, int j);
-    MatrixXd getZ(int i, int j);
+    double getW(int i, int j);
+    double getZ(int i, int j);
     void setW(int i, int j, double value);
     void setZ(int i, int j, double value);
 

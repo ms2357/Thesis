@@ -19,10 +19,10 @@ MatrixXd calculateCFL(const Mesh2D& mesh, const Matrix2d& A);
 void updateInteriorPoint(int i, int j, UMatrix& U, const MatrixXd& mu);
 
 void calcKnownCharacteristics(int i, int L, UMatrix& U, CharacteristicMatrix& Characteristics,
-                              const MatrixXd& R, double c0w, double c0z, double TimeStep, double PositionStep);
+                              const Matrix2d& R, double c0w, double c0z, double TimeStep, double PositionStep);
 
-void JunctionConditions(int i, UMatrix & UEdge1, MatrixXd& CharacteristicsEdge1, MatrixXd& CharacteristicsEdge2,
-                        const MatrixXd& Z, const MatrixXd& ZcoefficientMatrix, const MatrixXd& RI);
+void JunctionConditions(int i, UMatrix & UEdge1, CharacteristicMatrix& CharacteristicsEdge1, CharacteristicMatrix& CharacteristicsEdge2,
+                        const WaveSpeed& waveSpeedDetails);
 
 void updateBoundaryPoints(int i, int L, UMatrix& UEdge1, MatrixXd CharacteristicMatrixEdge1,
                           MatrixXd CharacteristicMatrixEdge2, const MatrixXd& R, const MatrixXd& RI,
