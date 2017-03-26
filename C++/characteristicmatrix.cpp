@@ -4,8 +4,8 @@
 
 CharacteristicMatrix::CharacteristicMatrix(int N)
 {
-    w = MatrixXd::Zero(N,2);
-    z = MatrixXd::Zero(N,2);
+    w = MatrixXd::Zero(N + 1, 2);
+    z = MatrixXd::Zero(N + 1, 2);
 }
 
 double CharacteristicMatrix::getW(int i, int j) { return w(i, j); }

@@ -28,7 +28,9 @@ int main()
 
     /* Setup matrix U, holds pressure and velocity */
     VectorXd initialPressure = (2 * M_PI * mesh.getPositionMesh()).array().sin();
-    VectorXd initialVelocity = MatrixXd::Ones(1 , mesh.getPositionMesh().size());
+    VectorXd initialVelocity(mesh.getPositionMesh().size());
+    initialVelocity.setOnes();
+    //VectorXd initialVelocity = VectorXd::Ones(mesh.getPositionMesh().size());
     UMatrix UEdge1(initialPressure, initialVelocity, N, L);
     UMatrix UEdge2(initialPressure, initialVelocity, N, L);
 
@@ -39,10 +41,10 @@ int main()
 
     /*Run LxF method for solving interterior nodes */
     laxfriedrichs(mesh, waveSpeedDetails, UEdge1, UEdge2, CharacteristicsEdge1, CharacteristicsEdge2);
-    //std::cout << "Pressure matrix:" << std::endl;
-    //std::cout << U.getPressure() << std::endl;
-    //std::cout << "Velocity matrix:" << std::endl;
-    //std::cout << U.getVelocity() << std::endl;
+    std::cout << "Pressure matrix:" << std::endl;
+    std::cout << UEdge1.getPressure() << std::endl;
+    std::cout << "Velocity matrix:" << std::endl;
+    std::cout << UEdge1.getVelocity() << std::endl;
 
     return 0;
 
